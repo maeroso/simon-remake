@@ -11,14 +11,19 @@ import SpriteKit
 
 extension SKNode {
     class func unarchiveFromFile(file : String) -> SKNode? {
-        if let path = NSBundle.mainBundle().pathForResource(file, ofType: "sks") {
-            var sceneData = NSData(contentsOfFile: path, options: .DataReadingMappedIfSafe, error: nil)!
-            var archiver = NSKeyedUnarchiver(forReadingWithData: sceneData)
+        if Bundle.main.path(forResource: file, ofType: "sks") != nil {
+            do {
+                let sceneData = try Data(contentsOf: URL(string: file)!, options: .mappedIfSafe)
+                let archiver = try NSKeyedUnarchiver(forReadingFrom: sceneData)
+                archiver.setClass(self.classForKeyedUnarchiver(), forClassName: "SKScene")
+                let scene = archiver.decodeObject(forKey: NSKeyedArchiveRootObjectKey) as! SKScene
+                archiver.finishDecoding()
+                return scene
+            } catch {
+                print(error)
+                return nil
+            }
             
-            archiver.setClass(self.classForKeyedUnarchiver(), forClassName: "SKScene")
-            let scene = archiver.decodeObjectForKey(NSKeyedArchiveRootObjectKey) as! SKScene
-            archiver.finishDecoding()
-            return scene
         } else {
             return nil
         }
@@ -26,11 +31,11 @@ extension SKNode {
 }
 
 class GameViewController: UIViewController {
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        if let scene = MainMenuScene.unarchiveFromFile("MainMenuScene") as? MainMenuScene {
+        
+        if let scene = MainMenuScene.unarchiveFromFile(file: "MainMenuScene.sks") as? MainMenuScene {
             // Configure the view.
             let skView = self.view as! SKView
             //skView.showsFPS = true
@@ -40,30 +45,30 @@ class GameViewController: UIViewController {
             skView.ignoresSiblingOrder = true
             
             /* Set the scale mode to scale to fit the window */
-            scene.scaleMode = .AspectFill
+            scene.scaleMode = .aspectFill
             
             skView.presentScene(scene)
         }
     }
-
-    override func shouldAutorotate() -> Bool {
+    
+    override var shouldAutorotate: Bool {
         return true
     }
-
-    override func supportedInterfaceOrientations() -> Int {
-        if UIDevice.currentDevice().userInterfaceIdiom == .Phone {
-            return Int(UIInterfaceOrientationMask.AllButUpsideDown.rawValue)
+    
+    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
+        if UIDevice.current.userInterfaceIdiom == .phone {
+            return UIInterfaceOrientationMask.allButUpsideDown
         } else {
-            return Int(UIInterfaceOrientationMask.All.rawValue)
+            return UIInterfaceOrientationMask.all
         }
     }
-
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Release any cached data, images, etc that aren't in use.
     }
-
-    override func prefersStatusBarHidden() -> Bool {
+    
+    override var prefersStatusBarHidden: Bool {
         return true
     }
 }

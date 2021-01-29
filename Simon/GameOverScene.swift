@@ -9,18 +9,18 @@
 import SpriteKit
 
 class GameOverScene: SKScene {
-    override func didMoveToView(view: SKView) {
-        self.runAction(SKAction .playSoundFileNamed("gameover.caf", waitForCompletion: false));
+    override func didMove(to view: SKView) {
+        self.run(SKAction .playSoundFileNamed("gameover.caf", waitForCompletion: false));
     }
     
-    override func touchesBegan(touches: Set<NSObject>, withEvent event: UIEvent) {
-        for touch in (touches as! Set<UITouch>) {
-            let location = touch.locationInNode(self);
-            let node = self.nodeAtPoint(location);
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        for touch in (touches) {
+            let location = touch.location(in: self);
+            let node = self.atPoint(location);
             
             if node is SKLabelNode && node.name == "tryAgainButton" {
-                if let scene = GameScene.unarchiveFromFile("GameScene") as? GameScene {
-                    scene.scaleMode = SKSceneScaleMode.AspectFill;
+                if let scene = GameScene.unarchiveFromFile(file: "GameScene") as? GameScene {
+                    scene.scaleMode = SKSceneScaleMode.aspectFill;
                     self.view!.presentScene(scene);
                 }
             }
